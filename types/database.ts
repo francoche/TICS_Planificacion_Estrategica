@@ -5,6 +5,13 @@ export interface Localidad {
   provincia: string;
 }
 
+export interface Usuario {
+  id: number;
+  email: string;
+  password_hash: string;
+  nombre: string;
+}
+
 export interface Cooperativa {
   id: number;
   idLocalidad: number;
