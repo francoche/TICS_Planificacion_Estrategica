@@ -11,7 +11,7 @@ import {
   Gauge,
   Sliders,
   Waves,
-  FlaskConical,
+  AlertCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -83,15 +83,15 @@ export function AppNavbar() {
           })}
         </nav>
 
-        {/* Right Info: Solo visible en modo testing sin BD. En operación normal no existe */}
+        {/* Alerta de desconexión si la base de datos no responde */}
         {isDbConnected === false && (
           <div className="hidden lg:flex items-center gap-2">
             <Badge
               variant="outline"
-              className="gap-1.5 text-[11px] font-normal border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              className="gap-1.5 text-[11px] font-normal border-destructive/30 bg-destructive/10 text-destructive"
             >
-              <FlaskConical className="size-3 text-amber-600 dark:text-amber-400" />
-              <span>Modo de testing, sin BD</span>
+              <AlertCircle className="size-3 text-destructive" />
+              <span>Sin conexión a la Base de Datos</span>
             </Badge>
           </div>
         )}

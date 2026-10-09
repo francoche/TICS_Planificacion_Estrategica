@@ -1,95 +1,32 @@
 import { Pool } from 'pg';
-import { Localidad, Cooperativa, Pozo, Medidor, Mantenimiento, Magnitud, Medicion } from '@/types/database';
 
-// Conexión PostgreSQL (si DATABASE_URL está presente en .env)
+// Conexión PostgreSQL (mediante DATABASE_URL o fallback local)
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/agua_db',
-  connectionTimeoutMillis: 1500,
-  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
 });
 
-// Seed data inicial para desarrollo en caso de que la BD no esté conectada aún
-const memoryStore = {
-  localidades: [
-    { id: 1, nombre: 'Paraná', cp: '3100', provincia: 'Entre Ríos' },
-    { id: 2, nombre: 'Oro Verde', cp: '3100', provincia: 'Entre Ríos' },
-    { id: 3, nombre: 'San Benito', cp: '3107', provincia: 'Entre Ríos' },
-    { id: 4, nombre: 'Colonia Avellaneda', cp: '3107', provincia: 'Entre Ríos' },
-  ] as Localidad[],
+let isSchemaInitialized = false;
 
-  cooperativas: [
-    { id: 1, idLocalidad: 1, nombre: 'Cooperativa de Agua Potable Paraná Centro' },
-    { id: 2, idLocalidad: 2, nombre: 'Cooperativa de Servicios Públicos Oro Verde' },
-    { id: 3, idLocalidad: 3, nombre: 'Cooperativa Agua y Saneamiento San Benito' },
-  ] as Cooperativa[],
-
-  pozos: [
-    { id: 1, idCooperativa: 1, coordX: '-31.744120', coordY: '-60.528340', profundidadPozo: 120.5, profundidadBomba: 85.0 },
-    { id: 2, idCooperativa: 1, coordX: '-31.758910', coordY: '-60.514210', profundidadPozo: 95.0, profundidadBomba: 70.0 },
-    { id: 3, idCooperativa: 2, coordX: '-31.823450', coordY: '-60.519800', profundidadPozo: 140.0, profundidadBomba: 105.5 },
-  ] as Pozo[],
-
-  medidores: [
-    { id: 1, idCooperativa: 1, marca: 'AquaTech', modelo: 'AQ-Flow 3000', nroSerie: 'SN-90218-AR' },
-    { id: 2, idCooperativa: 1, marca: 'Siemens', modelo: 'MAG 5100W', nroSerie: 'SN-44391-DE' },
-    { id: 3, idCooperativa: 2, marca: 'Endress+Hauser', modelo: 'Promag W 400', nroSerie: 'SN-10294-CH' },
-  ] as Medidor[],
-
-  mantenimientos: [
-    { id: 1, idMedidor: 1, fecha: '2026-09-15', detalle: 'Calibración electromagnética semestral e inspección de electrodos.' },
-    { id: 2, idMedidor: 1, fecha: '2026-10-01', detalle: 'Reemplazo de batería de respaldo y sellado estanco IP68.' },
-    { id: 3, idMedidor: 2, fecha: '2026-08-20', detalle: 'Limpieza de camisa de medición y verificación de puesta a tierra.' },
-  ] as Mantenimiento[],
-
-  magnitudes: [
-    { id: 1, nombre: 'Potencial de Hidrógeno (pH)', abreviatura: 'pH', valorMin: '6.5', valorMax: '8.5', unidad: 'pH' },
-    { id: 2, nombre: 'Conductividad Eléctrica', abreviatura: 'CE', valorMin: '200', valorMax: '1500', unidad: 'µS/cm' },
-    { id: 3, nombre: 'Temperatura', abreviatura: 'Temp', valorMin: '15', valorMax: '25', unidad: '°C' },
-    { id: 4, nombre: 'Turbidez', abreviatura: 'Turb', valorMin: '0', valorMax: '5', unidad: 'NTU' },
-    { id: 5, nombre: 'Cloro Residual Libre', abreviatura: 'Cl2', valorMin: '0.2', valorMax: '1.5', unidad: 'mg/L' },
-    { id: 6, nombre: 'Nivel Hidrométrico', abreviatura: 'Nivel', valorMin: '20', valorMax: '80', unidad: 'm' },
-  ] as Magnitud[],
-
-  mediciones: [
-    { id: 1, idMedidor: 1, idPozo: 1, idMagnitud: 1, medicion: 7.35, fecha: '2026-10-08 09:30:00' },
-    { id: 2, idMedidor: 1, idPozo: 1, idMagnitud: 2, medicion: 640, fecha: '2026-10-08 09:30:00' },
-    { id: 3, idMedidor: 1, idPozo: 1, idMagnitud: 3, medicion: 19.8, fecha: '2026-10-08 09:30:00' },
-    { id: 4, idMedidor: 1, idPozo: 1, idMagnitud: 4, medicion: 1.2, fecha: '2026-10-08 09:30:00' },
-    { id: 5, idMedidor: 1, idPozo: 1, idMagnitud: 5, medicion: 0.8, fecha: '2026-10-08 09:30:00' },
-
-    { id: 6, idMedidor: 1, idPozo: 1, idMagnitud: 1, medicion: 8.2, fecha: '2026-10-09 14:15:00' },
-    { id: 7, idMedidor: 1, idPozo: 1, idMagnitud: 2, medicion: 1350, fecha: '2026-10-09 14:15:00' },
-    { id: 8, idMedidor: 1, idPozo: 1, idMagnitud: 3, medicion: 21.0, fecha: '2026-10-09 14:15:00' },
-    { id: 9, idMedidor: 1, idPozo: 1, idMagnitud: 4, medicion: 4.8, fecha: '2026-10-09 14:15:00' },
-    { id: 10, idMedidor: 1, idPozo: 1, idMagnitud: 5, medicion: 0.35, fecha: '2026-10-09 14:15:00' },
-  ] as Medicion[],
-};
-
-// Variable para tracking de conexión
-let isPgConnected: boolean | null = null;
-
+// Comprobación de estado de conexión a PostgreSQL
 export async function testConnection(): Promise<boolean> {
-  if (isPgConnected !== null) return isPgConnected;
-  if (!process.env.DATABASE_URL) {
-    isPgConnected = false;
-    return false;
-  }
   try {
     const client = await pool.connect();
     client.release();
-    isPgConnected = true;
+    if (!isSchemaInitialized) {
+      await initDatabaseSchema();
+      isSchemaInitialized = true;
+    }
     return true;
-  } catch {
-    isPgConnected = false;
+  } catch (error) {
+    console.error('Error al conectar con PostgreSQL:', error);
     return false;
   }
 }
 
-// SQL DDL Initialization
+// Inicialización de tablas DDL en PostgreSQL si no existen
 export async function initDatabaseSchema() {
-  const connected = await testConnection();
-  if (!connected) return;
-
   const ddl = `
     CREATE TABLE IF NOT EXISTS "Localidad" (
       "id" INTEGER NOT NULL GENERATED BY DEFAULT AS IDENTITY,
@@ -159,5 +96,3 @@ export async function initDatabaseSchema() {
     console.error('Error al inicializar esquema PostgreSQL:', err);
   }
 }
-
-export const dbStore = memoryStore;
