@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const inter = Inter({
   variable: "--font-inter-font",
@@ -14,10 +18,12 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: "swap",
 });
 
+import { AppNavbar } from "@/components/common/app-navbar";
+
 export const metadata: Metadata = {
-  title: "AquaMetrics Telemetría - Registro de Datos Hidroquímicos",
+  title: "AquaMetrics - Sistema de Gestión y Telemetría",
   description:
-    "Sistema de monitoreo, telemetría y registro de parámetros hidroquímicos en tiempo real.",
+    "Sistema de monitoreo, telemetría y gestión de parámetros hidroquímicos.",
 };
 
 export default function RootLayout({
@@ -28,10 +34,15 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${plusJakartaSans.variable}`}
+      className={cn(inter.variable, plusJakartaSans.variable, geist.variable, "font-sans")}
     >
-      <body className="text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md selection:bg-secondary-fixed selection:text-on-secondary-fixed">
-        {children}
+      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground flex flex-col">
+        <TooltipProvider>
+          <AppNavbar />
+          <div className="flex-1">
+            {children}
+          </div>
+        </TooltipProvider>
       </body>
     </html>
   );
