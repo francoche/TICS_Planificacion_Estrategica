@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
   SelectContent,
+  SelectGroup,
   SelectItem,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
@@ -148,19 +149,25 @@ export function DynamicFormDialog({
                   {/* SELECT */}
                   {field.type === 'select' ? (
                     <Select
+                      items={field.options?.map((opt) => ({
+                        value: String(opt.value),
+                        label: opt.label,
+                      }))}
                       value={currentValue !== undefined && currentValue !== null ? String(currentValue) : undefined}
-                      onValueChange={(val) => handleChange(field.key, val)}
+                      onValueChange={(val: any) => handleChange(field.key, val)}
                       disabled={field.disabled || isSubmitting}
                     >
                       <SelectTrigger id={`field-${field.key}`} className="w-full text-xs">
                         <SelectValue placeholder={field.placeholder || `Seleccione ${field.label}`} />
                       </SelectTrigger>
                       <SelectContent>
-                        {field.options?.map((opt) => (
-                          <SelectItem key={String(opt.value)} value={String(opt.value)}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          {field.options?.map((opt) => (
+                            <SelectItem key={String(opt.value)} value={String(opt.value)}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                   ) : field.type === 'switch' ? (

@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
   SelectContent,
+  SelectGroup,
   SelectItem,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -246,18 +247,24 @@ export default function MedicionesPrincipalPage() {
               <span>Seleccionar Cooperativa:</span>
             </label>
             <Select
+              items={cooperativas.map((c) => ({
+                value: String(c.id),
+                label: `${c.nombre}${c.localidadNombre ? ` (${c.localidadNombre})` : ''}`,
+              }))}
               value={selectedCoopId}
-              onValueChange={(val) => setSelectedCoopId(val || '')}
+              onValueChange={(val: any) => setSelectedCoopId(val || '')}
             >
               <SelectTrigger className="w-full text-xs">
                 <SelectValue placeholder="Seleccione una cooperativa..." />
               </SelectTrigger>
               <SelectContent>
-                {cooperativas.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.nombre} {c.localidadNombre ? `(${c.localidadNombre})` : ''}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {cooperativas.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      {c.nombre} {c.localidadNombre ? `(${c.localidadNombre})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
@@ -274,18 +281,24 @@ export default function MedicionesPrincipalPage() {
               </div>
             ) : (
               <Select
+                items={pozos.map((p) => ({
+                  value: String(p.id),
+                  label: `Pozo #${p.id} - Prof: ${p.profundidadPozo}m (Bomba: ${p.profundidadBomba}m)`,
+                }))}
                 value={selectedPozoId}
-                onValueChange={(val) => setSelectedPozoId(val || '')}
+                onValueChange={(val: any) => setSelectedPozoId(val || '')}
               >
                 <SelectTrigger className="w-full text-xs">
                   <SelectValue placeholder="Seleccione un pozo..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {pozos.map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      Pozo #{p.id} - Prof: {p.profundidadPozo}m (Bomba: {p.profundidadBomba}m)
-                    </SelectItem>
-                  ))}
+                  <SelectGroup>
+                    {pozos.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>
+                        Pozo #{p.id} - Prof: {p.profundidadPozo}m (Bomba: {p.profundidadBomba}m)
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             )}
