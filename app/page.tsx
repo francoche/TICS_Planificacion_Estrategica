@@ -35,7 +35,7 @@ export default function MedicionesPrincipalPage() {
 
   const [medidores, setMedidores] = useState<Medidor[]>([]);
   const [magnitudes, setMagnitudes] = useState<Magnitud[]>([]);
-  const [mediciones, setMediciones] = useState<MedicionGroupItem[]>([]);
+  const [mediciones, setMediciones] = useState<MedicionGroupItem[] | null>(null);
 
   // Estado del modal de alta y edición de medición
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -86,6 +86,7 @@ export default function MedicionesPrincipalPage() {
     }
 
     async function loadMediciones() {
+      setMediciones(null);
       const pId = Number(selectedPozoId);
       const list = await getMedicionesByPozo(pId);
       setMediciones(list);
@@ -112,7 +113,7 @@ export default function MedicionesPrincipalPage() {
 
   // Columnas para la SmartTable de Mediciones
   const columns: SmartTableColumn<MedicionGroupItem>[] = [
-    { key: 'id', label: 'ID Muestra', className: 'w-24 font-mono' },
+    { key: 'id', label: 'ID', className: 'w-24 font-mono' },
     {
       key: 'fecha',
       label: 'Fecha y Hora de Medición',

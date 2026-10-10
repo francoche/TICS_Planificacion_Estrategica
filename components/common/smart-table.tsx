@@ -41,7 +41,9 @@ export interface SmartTableCustomAction<T = any> {
 
 interface SmartTableProps<T = any> {
   columns: SmartTableColumn<T>[];
-  data: T[];
+  data?: T[] | null;
+  loading?: boolean;
+  skeletonRowCount?: number;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
   customActions?: SmartTableCustomAction<T>[];
@@ -49,9 +51,13 @@ interface SmartTableProps<T = any> {
   keyField?: string;
 }
 
+const SKELETON_WIDTHS = ['w-3/4', 'w-1/2', 'w-4/5', 'w-2/3', 'w-3/5'];
+
 export function SmartTable<T extends Record<string, any>>({
   columns,
   data,
+  loading,
+  skeletonRowCount = 4,
   onEdit,
   onDelete,
   customActions,
@@ -61,6 +67,9 @@ export function SmartTable<T extends Record<string, any>>({
   const [rowToDelete, setRowToDelete] = useState<T | null>(null);
 
   const hasActions = Boolean(onEdit || onDelete || (customActions && customActions.length > 0));
+
+  const isLoading = loading !== undefined ? loading : data === null || data === undefined;
+  const safeData = data || [];
 
   const handleDeleteConfirm = () => {
     if (rowToDelete && onDelete) {
@@ -95,9 +104,59 @@ export function SmartTable<T extends Record<string, any>>({
               )}
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {data.length === 0 ? (
-              <TableRow>
+          <TableBody
+            key={isLoading ? 'table-loading' : 'table-loaded'}
+            className="animate-in fade-in-0 duration-300"
+          >
+            {isLoading ? (
+              Array.from({ length: skeletonRowCount }).map((_, rIdx) => (
+                <TableRow
+                  key={`skeleton-row-${rIdx}`}
+                  className="hover:bg-transparent animate-in fade-in-0 duration-200"
+                >
+                  {columns.map((col, cIdx) => {
+                    const widthClass =
+                      col.key === 'id'
+                        ? 'w-8'
+                        : SKELETON_WIDTHS[(rIdx + cIdx) % SKELETON_WIDTHS.length];
+
+                    return (
+                      <TableCell
+                        key={`skeleton-cell-${rIdx}-${col.key}`}
+                        className={cn(
+                          'text-xs py-3 align-middle',
+                          col.align === 'right' && 'text-right',
+                          col.align === 'center' && 'text-center',
+                          col.className
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            'h-4 rounded-md bg-muted/80 animate-pulse',
+                            col.align === 'center'
+                              ? 'mx-auto'
+                              : col.align === 'right'
+                              ? 'ml-auto'
+                              : '',
+                            widthClass
+                          )}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                  {hasActions && (
+                    <TableCell className="text-right py-2 align-middle whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <div className="h-7 w-20 rounded-md bg-muted/80 animate-pulse" />
+                        <div className="h-7 w-7 rounded-md bg-muted/80 animate-pulse" />
+                        <div className="h-7 w-7 rounded-md bg-muted/80 animate-pulse" />
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            ) : safeData.length === 0 ? (
+              <TableRow className="animate-in fade-in-0 duration-300">
                 <TableCell
                   colSpan={columns.length + (hasActions ? 1 : 0)}
                   className="h-32 text-center text-muted-foreground text-xs"
@@ -109,11 +168,14 @@ export function SmartTable<T extends Record<string, any>>({
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((row, idx) => {
+              safeData.map((row, idx) => {
                 const rowKey = row[keyField] ?? idx;
 
                 return (
-                  <TableRow key={rowKey} className="transition-colors hover:bg-muted/30">
+                  <TableRow
+                    key={rowKey}
+                    className="transition-colors hover:bg-muted/30 animate-in fade-in-0 duration-300"
+                  >
                     {columns.map((col) => {
                       const rawValue = row[col.key];
                       const rendered = col.render ? col.render(rawValue, row) : rawValue ?? '-';

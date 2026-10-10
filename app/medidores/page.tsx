@@ -13,7 +13,7 @@ import { Wrench } from 'lucide-react';
 
 export default function MedidoresPage() {
   const router = useRouter();
-  const [data, setData] = useState<Medidor[]>([]);
+  const [data, setData] = useState<Medidor[] | null>(null);
   const [cooperativas, setCooperativas] = useState<Cooperativa[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Medidor | null>(null);

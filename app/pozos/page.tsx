@@ -12,7 +12,7 @@ import { MapPin, ExternalLink } from 'lucide-react';
 import { getGoogleMapsUrl } from '@/lib/maps';
 
 export default function PozosPage() {
-  const [data, setData] = useState<Pozo[]>([]);
+  const [data, setData] = useState<Pozo[] | null>(null);
   const [cooperativas, setCooperativas] = useState<Cooperativa[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Pozo | null>(null);

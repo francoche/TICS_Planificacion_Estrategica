@@ -9,7 +9,7 @@ import { Localidad, PROVINCIAS_ARGENTINAS } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
 
 export default function LocalidadesPage() {
-  const [data, setData] = useState<Localidad[]>([]);
+  const [data, setData] = useState<Localidad[] | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Localidad | null>(null);
 

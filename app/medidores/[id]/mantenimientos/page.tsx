@@ -22,7 +22,7 @@ export default function MedidorMantenimientosPage() {
   const idMedidor = Number(params?.id);
 
   const [medidor, setMedidor] = useState<Medidor | null>(null);
-  const [data, setData] = useState<Mantenimiento[]>([]);
+  const [data, setData] = useState<Mantenimiento[] | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Mantenimiento | null>(null);
 
@@ -164,7 +164,7 @@ export default function MedidorMantenimientosPage() {
                   <span className="text-[11px] text-muted-foreground block">Historial Registrado</span>
                   <Badge variant="secondary" className="mt-0.5 gap-1 text-xs">
                     <Wrench className="size-3" />
-                    <span>{data.length} Intervenciones</span>
+                    <span>{data?.length} Intervenciones</span>
                   </Badge>
                 </div>
               </div>

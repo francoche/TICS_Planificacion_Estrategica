@@ -10,7 +10,7 @@ import { Cooperativa, Localidad } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
 
 export default function CooperativasPage() {
-  const [data, setData] = useState<Cooperativa[]>([]);
+  const [data, setData] = useState<Cooperativa[] | null>(null);
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Cooperativa | null>(null);

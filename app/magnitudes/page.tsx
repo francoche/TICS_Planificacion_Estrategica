@@ -9,7 +9,7 @@ import { Magnitud } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
 
 export default function MagnitudesPage() {
-  const [data, setData] = useState<Magnitud[]>([]);
+  const [data, setData] = useState<Magnitud[] | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Magnitud | null>(null);
 
