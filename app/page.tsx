@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ABMCardLayout } from '@/components/common/abm-card-layout';
 import { SmartTable, SmartTableColumn, SmartTableCustomAction } from '@/components/common/smart-table';
@@ -9,7 +9,7 @@ import { getCooperativas } from '@/actions/cooperativa';
 import { getPozos } from '@/actions/pozo';
 import { getMedidores } from '@/actions/medidor';
 import { getMagnitudes } from '@/actions/magnitudes';
-import { getMedicionesByPozo, createMedicionBatch, deleteMedicionGroup } from '@/actions/medicion';
+import { getMedicionesByPozo, createMedicionBatch, updateMedicionBatch, deleteMedicionGroup } from '@/actions/medicion';
 import { Cooperativa, Pozo, Medidor, Magnitud, MedicionGroupItem } from '@/types/database';
 import {
   Select,
@@ -37,8 +37,9 @@ export default function MedicionesPrincipalPage() {
   const [magnitudes, setMagnitudes] = useState<Magnitud[]>([]);
   const [mediciones, setMediciones] = useState<MedicionGroupItem[]>([]);
 
-  // Estado del modal de alta de medición
+  // Estado del modal de alta y edición de medición
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MedicionGroupItem | null>(null);
 
   // 1. Cargar Cooperativas y Magnitudes iniciales
   useEffect(() => {
@@ -97,6 +98,16 @@ export default function MedicionesPrincipalPage() {
       const list = await getMedicionesByPozo(Number(selectedPozoId));
       setMediciones(list);
     }
+  };
+
+  const handleOpenNew = () => {
+    setEditingItem(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (row: MedicionGroupItem) => {
+    setEditingItem(row);
+    setIsDialogOpen(true);
   };
 
   // Columnas para la SmartTable de Mediciones
@@ -187,11 +198,48 @@ export default function MedicionesPrincipalPage() {
       type: 'number',
       unit: mag.unidad,
       placeholder: mag.valorOptimo
-        ? `Rango: ${mag.valorMin} a ${mag.valorMax} (Óptimo: ${mag.valorOptimo})`
-        : `Rango: ${mag.valorMin} a ${mag.valorMax}`,
-      required: true,
+        ? `Opcional. Rango: ${mag.valorMin} a ${mag.valorMax} (Óptimo: ${mag.valorOptimo})`
+        : `Opcional. Rango: ${mag.valorMin} a ${mag.valorMax}`,
+      required: false,
     })),
   ];
+
+  // Valores iniciales calculados dinámicamente si estamos editando
+  const initialFormValues = useMemo(() => {
+    if (!editingItem) {
+      return null;
+    }
+
+    let formattedDate = '';
+    if (editingItem.fecha) {
+      const d = new Date(editingItem.fecha);
+      if (!isNaN(d.getTime())) {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        formattedDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      } else {
+        formattedDate = editingItem.fecha.replace(' ', 'T').substring(0, 16);
+      }
+    }
+
+    const initVals: Record<string, any> = {
+      idMedidor: String(editingItem.idMedidor),
+      fecha: formattedDate,
+    };
+
+    if (editingItem.valoresMap) {
+      for (const [magId, val] of Object.entries(editingItem.valoresMap)) {
+        initVals[String(magId)] = val;
+      }
+    } else if (editingItem.resumenValores) {
+      editingItem.resumenValores.forEach((rv) => {
+        if (rv.idMagnitud) {
+          initVals[String(rv.idMagnitud)] = rv.valor;
+        }
+      });
+    }
+
+    return initVals;
+  }, [editingItem]);
 
   const handleSubmit = async (formValues: Record<string, any>) => {
     const idPozo = Number(selectedPozoId);
@@ -201,20 +249,38 @@ export default function MedicionesPrincipalPage() {
     const medicionesValues: Record<string, number> = {};
     magnitudes.forEach((mag) => {
       const val = formValues[String(mag.id)];
-      if (val !== undefined && val !== '') {
-        medicionesValues[mag.id] = parseFloat(val);
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        const num = parseFloat(String(val));
+        if (!isNaN(num)) {
+          medicionesValues[mag.id] = num;
+        }
       }
     });
 
-    const res = await createMedicionBatch({
-      idPozo,
-      idMedidor,
-      fecha,
-      mediciones: medicionesValues,
-    });
+    if (Object.keys(medicionesValues).length === 0) {
+      throw new Error('Debe completar al menos una magnitud para registrar la medición.');
+    }
 
-    if (!res.success) {
-      throw new Error(res.error);
+    if (editingItem) {
+      const res = await updateMedicionBatch(editingItem.id, {
+        idPozo,
+        idMedidor,
+        fecha,
+        mediciones: medicionesValues,
+      });
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+    } else {
+      const res = await createMedicionBatch({
+        idPozo,
+        idMedidor,
+        fecha,
+        mediciones: medicionesValues,
+      });
+      if (!res.success) {
+        throw new Error(res.error);
+      }
     }
 
     await reloadCurrentMediciones();
@@ -227,7 +293,7 @@ export default function MedicionesPrincipalPage() {
     <ABMCardLayout
       title="Mediciones de Telemetría"
       description="Página principal de monitoreo hidroquímico, control de pozos y registro de mediciones por magnitud."
-      onNewClick={selectedPozoId ? () => setIsDialogOpen(true) : undefined}
+      onNewClick={selectedPozoId ? handleOpenNew : undefined}
       newButtonLabel="Nueva Medición"
       headerExtra={
         <div className="flex items-center gap-2">
@@ -341,6 +407,7 @@ export default function MedicionesPrincipalPage() {
           <SmartTable<MedicionGroupItem>
             columns={columns}
             data={mediciones}
+            onEdit={handleEdit}
             onDelete={handleDelete}
             customActions={customActions}
             emptyMessage={
@@ -352,15 +419,27 @@ export default function MedicionesPrincipalPage() {
         </div>
       </div>
 
-      {/* FORMULARIO DINÁMICO DE NUEVA MEDICIÓN */}
+      {/* FORMULARIO DINÁMICO DE NUEVA O MODIFICACIÓN DE MEDICIÓN */}
       <DynamicFormDialog
         open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        title={`Nueva Medición - Pozo ID (${selectedPozoId})${selectedPozoObj?.nombre ? ` - ${selectedPozoObj.nombre}` : ''}`}
-        description="Ingrese los valores medidos en campo. Las magnitudes y unidades se configuran de acuerdo al estándar hidroquímico."
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setEditingItem(null);
+        }}
+        title={
+          editingItem
+            ? `Modificar Medición - Pozo ID (${selectedPozoId})${selectedPozoObj?.nombre ? ` - ${selectedPozoObj.nombre}` : ''}`
+            : `Nueva Medición - Pozo ID (${selectedPozoId})${selectedPozoObj?.nombre ? ` - ${selectedPozoObj.nombre}` : ''}`
+        }
+        description={
+          editingItem
+            ? 'Modifique el medidor utilizado, fecha u hora y los valores hidroquímicos. Solo se guardarán los parámetros con valores completados.'
+            : 'Ingrese los valores medidos en campo. Puede completar una, varias o todas las magnitudes disponibles.'
+        }
         fields={formFields}
+        initialValues={initialFormValues}
         onSubmit={handleSubmit}
-        submitLabel="Registrar Medición"
+        submitLabel={editingItem ? 'Guardar Cambios' : 'Registrar Medición'}
       />
     </ABMCardLayout>
   );

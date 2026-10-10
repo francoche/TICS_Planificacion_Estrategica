@@ -153,18 +153,6 @@ export default function ReporteMedicionPage() {
                     <MapPin className="size-3 text-muted-foreground" />
                     <span>Ubicación GPS</span>
                   </span>
-                  {reportData.pozo.coordX && reportData.pozo.coordY && (
-                    <a
-                      href={getGoogleMapsUrl(reportData.pozo.coordX, reportData.pozo.coordY, 18) || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
-                      title="Abrir ubicación en Google Maps"
-                    >
-                      <span>Maps</span>
-                      <ExternalLink className="size-2.5" />
-                    </a>
-                  )}
                 </div>
                 <span className="font-mono text-xs text-foreground block">
                   Lat: {reportData.pozo.coordX || 'N/D'}
@@ -172,6 +160,18 @@ export default function ReporteMedicionPage() {
                 <span className="font-mono text-xs text-foreground block">
                   Long: {reportData.pozo.coordY || 'N/D'}
                 </span>
+                {reportData.pozo.coordX && reportData.pozo.coordY && (
+                  <a
+                    href={getGoogleMapsUrl(reportData.pozo.coordX, reportData.pozo.coordY, 18) || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
+                    title="Abrir ubicación en Google Maps"
+                  >
+                    <span>Maps</span>
+                    <ExternalLink className="size-2.5" />
+                  </a>
+                )}
               </div>
 
               {/* Medidor utilizado */}

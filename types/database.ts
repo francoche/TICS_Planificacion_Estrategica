@@ -82,11 +82,13 @@ export interface MedicionGroupItem {
   medidorMarca?: string;
   medidorModelo?: string;
   resumenValores: {
+    idMagnitud?: number;
     magnitud: string;
     abreviatura: string;
     valor: number;
     unidad: string;
   }[];
+  valoresMap?: Record<string | number, number>;
 }
 
 export interface MedicionReportData {

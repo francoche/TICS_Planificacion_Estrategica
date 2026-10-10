@@ -31,16 +31,21 @@ export async function getMedicionesByPozo(idPozo: number): Promise<MedicionGroup
           medidorMarca: item.medidorMarca,
           medidorModelo: item.medidorModelo,
           resumenValores: [],
+          valoresMap: {},
         });
       }
 
       const group = groupsMap.get(key)!;
       group.resumenValores.push({
+        idMagnitud: item.idMagnitud,
         magnitud: item.magnitudNombre || 'Magnitud',
         abreviatura: item.magnitudAbreviatura || 'M',
         valor: Number(item.medicion),
         unidad: item.magnitudUnidad || '',
       });
+      if (group.valoresMap && item.idMagnitud) {
+        group.valoresMap[item.idMagnitud] = Number(item.medicion);
+      }
     }
 
     return Array.from(groupsMap.values()).sort(
@@ -130,6 +135,10 @@ export async function createMedicionBatch(data: {
   mediciones: Record<string | number, number | string>;
 }): Promise<{ success: boolean; firstId?: number; error?: string }> {
   try {
+    if (!data.mediciones || Object.keys(data.mediciones).length === 0) {
+      return { success: false, error: 'Debe ingresar al menos una magnitud con valor numérico.' };
+    }
+
     const fecha = data.fecha || new Date().toISOString().replace('T', ' ').substring(0, 19);
     let firstCreatedId: number | undefined;
 
@@ -173,5 +182,51 @@ export async function deleteMedicionGroup(id: number): Promise<{ success: boolea
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || 'Error al eliminar la medición' };
+  }
+}
+
+export async function updateMedicionBatch(
+  idMedicionRef: number,
+  data: {
+    idPozo: number;
+    idMedidor: number;
+    fecha?: string;
+    mediciones: Record<string | number, number | string>;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!data.mediciones || Object.keys(data.mediciones).length === 0) {
+      return { success: false, error: 'Debe ingresar al menos una magnitud con valor numérico.' };
+    }
+
+    const resRef = await pool.query('SELECT * FROM "Medicion" WHERE "id" = $1', [idMedicionRef]);
+    const ref = resRef.rows[0];
+
+    if (ref) {
+      await pool.query(
+        'DELETE FROM "Medicion" WHERE "idPozo" = $1 AND "idMedidor" = $2 AND "fecha" = $3',
+        [ref.idPozo, ref.idMedidor, ref.fecha]
+      );
+    } else {
+      await pool.query('DELETE FROM "Medicion" WHERE "id" = $1', [idMedicionRef]);
+    }
+
+    const fecha = data.fecha || new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    for (const [key, val] of Object.entries(data.mediciones)) {
+      const idMagnitud = Number(key);
+      const medicion = parseFloat(String(val));
+      if (isNaN(idMagnitud) || isNaN(medicion)) continue;
+
+      await pool.query(
+        'INSERT INTO "Medicion" ("idMedidor", "idPozo", "idMagnitud", "medicion", "fecha") VALUES ($1, $2, $3, $4, $5)',
+        [data.idMedidor, data.idPozo, idMagnitud, medicion, fecha]
+      );
+    }
+
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Error al actualizar la medición' };
   }
 }
