@@ -56,7 +56,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+    <div className="relative flex-1 w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
       {/* Luces y degradados ambientales de fondo */}
       <div className="pointer-events-none absolute -top-40 -left-40 size-96 rounded-full bg-primary/15 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 size-96 rounded-full bg-cyan-500/15 blur-3xl" />
@@ -80,7 +80,7 @@ function LoginForm() {
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pb-5">
               {/* Alerta de Error */}
               {error && (
                 <div className="flex items-start gap-2.5 p-3 rounded-lg text-xs bg-destructive/10 border border-destructive/20 text-destructive animate-in fade-in zoom-in-95 duration-200">
@@ -111,7 +111,7 @@ function LoginForm() {
               </div>
 
               {/* Campo Contraseña */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 mb-1">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-xs font-medium">
                     Contraseña
@@ -142,10 +142,10 @@ function LoginForm() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-3 pt-2">
+            <CardFooter className="flex flex-col gap-3 pt-5 pb-6">
               <Button
                 type="submit"
-                className="w-full font-semibold text-xs h-10 shadow-sm"
+                className="w-full font-semibold text-xs h-10 shadow-sm cursor-pointer"
                 disabled={loading}
               >
                 {loading ? (
@@ -172,7 +172,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="flex-1 w-full flex items-center justify-center">
           <Loader2 className="size-8 animate-spin text-primary" />
         </div>
       }

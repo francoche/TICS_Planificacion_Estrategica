@@ -19,6 +19,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 import { AppNavbar } from "@/components/common/app-navbar";
+import { AppFooter } from "@/components/common/app-footer";
 
 export const metadata: Metadata = {
   title: "AquaMetrics - Sistema de Gestión y Telemetría",
@@ -39,9 +40,10 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground flex flex-col">
         <TooltipProvider>
           <AppNavbar />
-          <div className="flex-1">
+          <main className="flex-1 flex flex-col">
             {children}
-          </div>
+          </main>
+          <AppFooter />
         </TooltipProvider>
       </body>
     </html>
