@@ -22,6 +22,7 @@ export interface Cooperativa {
 export interface Pozo {
   id: number;
   idCooperativa: number;
+  nombre?: string;
   coordX: string;
   coordY: string;
   profundidadPozo: number;
@@ -91,6 +92,7 @@ export interface MedicionReportData {
   fecha: string;
   pozo: {
     id: number;
+    nombre?: string;
     coordX: string;
     coordY: string;
     profundidadPozo: number;

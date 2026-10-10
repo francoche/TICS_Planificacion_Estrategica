@@ -17,7 +17,9 @@ import {
   Printer,
   Sparkles,
   MapPin,
+  ExternalLink,
 } from 'lucide-react';
+import { getGoogleMapsUrl } from '@/lib/maps';
 
 export default function ReporteMedicionPage() {
   const params = useParams();
@@ -120,18 +122,41 @@ export default function ReporteMedicionPage() {
                 <span className="font-heading font-semibold text-sm text-foreground block">
                   {reportData.pozo.cooperativaNombre}
                 </span>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-                  <Droplets className="size-3 text-primary" />
-                  <span>Pozo #{reportData.pozo.id} (Prof: {reportData.pozo.profundidadPozo}m)</span>
+                <div className="flex flex-col gap-0.5 text-xs text-muted-foreground font-mono">
+                  <div className="flex items-center gap-1 text-foreground font-medium">
+                    <Droplets className="size-3 text-primary shrink-0" />
+                    <span>
+                      {reportData.pozo.nombre
+                        ? `${reportData.pozo.nombre} (ID: ${reportData.pozo.id})`
+                        : `Pozo ID (${reportData.pozo.id})`}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    Prof: {reportData.pozo.profundidadPozo}m (Bomba: {reportData.pozo.profundidadBomba}m)
+                  </span>
                 </div>
               </div>
 
               {/* Coordenadas Geográficas */}
               <div className="space-y-1">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <MapPin className="size-3 text-muted-foreground" />
-                  <span>Ubicación GPS</span>
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <MapPin className="size-3 text-muted-foreground" />
+                    <span>Ubicación GPS</span>
+                  </span>
+                  {reportData.pozo.coordX && reportData.pozo.coordY && (
+                    <a
+                      href={getGoogleMapsUrl(reportData.pozo.coordX, reportData.pozo.coordY, 18) || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
+                      title="Abrir ubicación en Google Maps"
+                    >
+                      <span>Maps</span>
+                      <ExternalLink className="size-2.5" />
+                    </a>
+                  )}
+                </div>
                 <span className="font-mono text-xs text-foreground block">
                   Lat: {reportData.pozo.coordX || 'N/D'}
                 </span>

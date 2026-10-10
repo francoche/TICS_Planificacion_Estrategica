@@ -30,6 +30,17 @@ export default function PozosPage() {
   const columns: SmartTableColumn<Pozo>[] = [
     { key: 'id', label: 'ID', className: 'w-16 font-mono' },
     {
+      key: 'nombre',
+      label: 'Nombre',
+      className: 'font-medium',
+      render: (val) =>
+        val ? (
+          <span className="font-semibold text-foreground">{val}</span>
+        ) : (
+          <span className="text-muted-foreground italic text-xs">Sin asignar</span>
+        ),
+    },
+    {
       key: 'cooperativaNombre',
       label: 'Cooperativa',
       render: (val) => (
@@ -105,6 +116,13 @@ export default function PozosPage() {
       defaultValue: cooperativas[0]?.id ? String(cooperativas[0].id) : undefined,
     },
     {
+      key: 'nombre',
+      label: 'Nombre',
+      type: 'text',
+      placeholder: 'Ej. Pozo 18',
+      required: true,
+    },
+    {
       key: 'coordX',
       label: 'Latitud (Coord X)',
       type: 'text',
@@ -159,6 +177,7 @@ export default function PozosPage() {
     if (editingItem) {
       const res = await updatePozo(editingItem.id, {
         idCooperativa: Number(formValues.idCooperativa),
+        nombre: formValues.nombre,
         coordX: formValues.coordX,
         coordY: formValues.coordY,
         profundidadPozo: Number(formValues.profundidadPozo),
@@ -168,6 +187,7 @@ export default function PozosPage() {
     } else {
       const res = await createPozo({
         idCooperativa: Number(formValues.idCooperativa),
+        nombre: formValues.nombre,
         coordX: formValues.coordX,
         coordY: formValues.coordY,
         profundidadPozo: Number(formValues.profundidadPozo),

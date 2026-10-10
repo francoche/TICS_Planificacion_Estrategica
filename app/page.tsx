@@ -142,12 +142,12 @@ export default function MedicionesPrincipalPage() {
   const customActions: SmartTableCustomAction<MedicionGroupItem>[] = [
     {
       label: 'Ver Reporte',
-      icon: <FileText className="size-3.5 text-primary" />,
+      icon: <FileText className="size-3.5 text-primary-foreground" />,
       onClick: (row) => {
         router.push(`/mediciones/${row.id}`);
       },
       variant: 'default',
-      className: 'shadow-xs font-semibold',
+      className: 'shadow-xs font-semibold text-primary-foreground',
     },
   ];
 
@@ -232,7 +232,10 @@ export default function MedicionesPrincipalPage() {
           {selectedPozoObj && (
             <Badge variant="secondary" className="gap-1 text-xs">
               <Droplets className="size-3 text-primary" />
-              <span>Pozo #{selectedPozoObj.id}</span>
+              <span>
+                Pozo ID ({selectedPozoObj.id})
+                {selectedPozoObj.nombre ? ` - ${selectedPozoObj.nombre}` : ''}
+              </span>
             </Badge>
           )}
         </div>
@@ -284,7 +287,7 @@ export default function MedicionesPrincipalPage() {
               <Select
                 items={pozos.map((p) => ({
                   value: String(p.id),
-                  label: `Pozo #${p.id} - Prof: ${p.profundidadPozo}m (Bomba: ${p.profundidadBomba}m)`,
+                  label: `Pozo ID (${p.id})${p.nombre ? ` - ${p.nombre}` : ''} - Prof: ${p.profundidadPozo}m (Bomba: ${p.profundidadBomba}m)`,
                 }))}
                 value={selectedPozoId}
                 onValueChange={(val: any) => setSelectedPozoId(val || '')}
@@ -296,7 +299,7 @@ export default function MedicionesPrincipalPage() {
                   <SelectGroup>
                     {pozos.map((p) => (
                       <SelectItem key={p.id} value={String(p.id)}>
-                        Pozo #{p.id} - Prof: {p.profundidadPozo}m (Bomba: {p.profundidadBomba}m)
+                        Pozo ID ({p.id}){p.nombre ? ` - ${p.nombre}` : ''} - Prof: {p.profundidadPozo}m (Bomba: {p.profundidadBomba}m)
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -313,7 +316,7 @@ export default function MedicionesPrincipalPage() {
               <span>Historial de Mediciones</span>
               {selectedPozoObj && selectedCoopObj && (
                 <span className="text-xs font-normal text-muted-foreground">
-                  ({selectedCoopObj.nombre} — Pozo #{selectedPozoObj.id})
+                  ({selectedCoopObj.nombre} — Pozo ID ({selectedPozoObj.id}){selectedPozoObj.nombre ? ` - ${selectedPozoObj.nombre}` : ''})
                 </span>
               )}
             </h3>
@@ -351,7 +354,7 @@ export default function MedicionesPrincipalPage() {
       <DynamicFormDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        title={`Nueva Medición - Pozo #${selectedPozoId}`}
+        title={`Nueva Medición - Pozo ID (${selectedPozoId})${selectedPozoObj?.nombre ? ` - ${selectedPozoObj.nombre}` : ''}`}
         description="Ingrese los valores medidos en campo. Las magnitudes y unidades se configuran de acuerdo al estándar hidroquímico."
         fields={formFields}
         onSubmit={handleSubmit}

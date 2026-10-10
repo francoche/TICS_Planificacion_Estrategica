@@ -21,6 +21,7 @@ export async function createPozo(data: Omit<Pozo, 'id'>): Promise<{ success: boo
   try {
     const payload = {
       idCooperativa: Number(data.idCooperativa),
+      nombre: String(data.nombre || ''),
       coordX: String(data.coordX || ''),
       coordY: String(data.coordY || ''),
       profundidadPozo: Number(data.profundidadPozo) || 0,
@@ -28,8 +29,8 @@ export async function createPozo(data: Omit<Pozo, 'id'>): Promise<{ success: boo
     };
 
     const res = await pool.query(
-      'INSERT INTO "Pozo" ("idCooperativa", "coordX", "coordY", "profundidadPozo", "profundidadBomba") VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [payload.idCooperativa, payload.coordX, payload.coordY, payload.profundidadPozo, payload.profundidadBomba]
+      'INSERT INTO "Pozo" ("idCooperativa", "nombre", "coordX", "coordY", "profundidadPozo", "profundidadBomba") VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [payload.idCooperativa, payload.nombre, payload.coordX, payload.coordY, payload.profundidadPozo, payload.profundidadBomba]
     );
 
     revalidatePath('/pozos');
@@ -44,6 +45,7 @@ export async function updatePozo(id: number, data: Omit<Pozo, 'id'>): Promise<{ 
   try {
     const payload = {
       idCooperativa: Number(data.idCooperativa),
+      nombre: String(data.nombre || ''),
       coordX: String(data.coordX || ''),
       coordY: String(data.coordY || ''),
       profundidadPozo: Number(data.profundidadPozo) || 0,
@@ -51,8 +53,8 @@ export async function updatePozo(id: number, data: Omit<Pozo, 'id'>): Promise<{ 
     };
 
     const res = await pool.query(
-      'UPDATE "Pozo" SET "idCooperativa" = $1, "coordX" = $2, "coordY" = $3, "profundidadPozo" = $4, "profundidadBomba" = $5 WHERE "id" = $6 RETURNING *',
-      [payload.idCooperativa, payload.coordX, payload.coordY, payload.profundidadPozo, payload.profundidadBomba, id]
+      'UPDATE "Pozo" SET "idCooperativa" = $1, "nombre" = $2, "coordX" = $3, "coordY" = $4, "profundidadPozo" = $5, "profundidadBomba" = $6 WHERE "id" = $7 RETURNING *',
+      [payload.idCooperativa, payload.nombre, payload.coordX, payload.coordY, payload.profundidadPozo, payload.profundidadBomba, id]
     );
 
     revalidatePath('/pozos');

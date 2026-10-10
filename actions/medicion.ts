@@ -89,6 +89,7 @@ export async function getMedicionReport(idMedicion: number): Promise<MedicionRep
       fecha: String(refItem.fecha).replace('T', ' ').substring(0, 19),
       pozo: {
         id: refItem.idPozo,
+        nombre: pozo?.nombre || '',
         coordX: pozo?.coordX || '',
         coordY: pozo?.coordY || '',
         profundidadPozo: Number(pozo?.profundidadPozo) || 0,
