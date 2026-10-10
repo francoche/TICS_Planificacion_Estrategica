@@ -8,6 +8,8 @@ import { getPozos, createPozo, updatePozo, deletePozo } from '@/actions/pozo';
 import { getCooperativas } from '@/actions/cooperativa';
 import { Pozo, Cooperativa } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
+import { MapPin, ExternalLink } from 'lucide-react';
+import { getGoogleMapsUrl } from '@/lib/maps';
 
 export default function PozosPage() {
   const [data, setData] = useState<Pozo[]>([]);
@@ -36,8 +38,48 @@ export default function PozosPage() {
         </Badge>
       ),
     },
-    { key: 'coordX', label: 'Latitud (Coord X)', className: 'font-mono text-xs' },
-    { key: 'coordY', label: 'Longitud (Coord Y)', className: 'font-mono text-xs' },
+    {
+      key: 'coordX',
+      label: 'Latitud (Coord X)',
+      className: 'font-mono text-xs',
+      render: (val, row) => {
+        const url = getGoogleMapsUrl(row.coordX, row.coordY, 18);
+        if (!url) return <span className="font-mono text-muted-foreground">{val || '—'}</span>;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono inline-flex items-center gap-1 text-foreground hover:text-primary hover:underline transition-colors"
+            title="Abrir ubicación en Google Maps (~300m zoom)"
+          >
+            <span>{val}</span>
+            <ExternalLink className="size-2.5 opacity-40 hover:opacity-100" />
+          </a>
+        );
+      },
+    },
+    {
+      key: 'coordY',
+      label: 'Longitud (Coord Y)',
+      className: 'font-mono text-xs',
+      render: (val, row) => {
+        const url = getGoogleMapsUrl(row.coordX, row.coordY, 18);
+        if (!url) return <span className="font-mono text-muted-foreground">{val || '—'}</span>;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono inline-flex items-center gap-1 text-foreground hover:text-primary hover:underline transition-colors"
+            title="Abrir ubicación en Google Maps (~300m zoom)"
+          >
+            <span>{val}</span>
+            <ExternalLink className="size-2.5 opacity-40 hover:opacity-100" />
+          </a>
+        );
+      },
+    },
     {
       key: 'profundidadPozo',
       label: 'Prof. Pozo',
@@ -148,6 +190,23 @@ export default function PozosPage() {
         data={data}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        customActions={[
+          {
+            label: 'Ver en Maps',
+            icon: <MapPin className="size-3 text-rose-500 shrink-0" />,
+            onClick: (row) => {
+              const url = getGoogleMapsUrl(row.coordX, row.coordY, 18);
+              if (url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+              } else {
+                alert('Este pozo no posee coordenadas válidas.');
+              }
+            },
+            variant: 'outline',
+            className:
+              'text-xs hover:border-rose-400/50 hover:bg-rose-500/5 hover:text-foreground transition-all duration-200 shadow-2xs cursor-pointer',
+          },
+        ]}
         emptyMessage="No hay pozos registrados."
       />
 

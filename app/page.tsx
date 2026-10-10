@@ -20,7 +20,8 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Building2, Droplets, Calendar } from 'lucide-react';
+import { FileText, Building2, Droplets, Calendar, MapPin, ExternalLink } from 'lucide-react';
+import { getGoogleMapsUrl } from '@/lib/maps';
 
 export default function MedicionesPrincipalPage() {
   const router = useRouter();
@@ -307,7 +308,7 @@ export default function MedicionesPrincipalPage() {
 
         {/* LISTADO DE MEDICIONES ASOCIADAS AL POZO */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h3 className="font-heading font-semibold text-sm text-foreground flex items-center gap-2">
               <span>Historial de Mediciones</span>
               {selectedPozoObj && selectedCoopObj && (
@@ -316,6 +317,20 @@ export default function MedicionesPrincipalPage() {
                 </span>
               )}
             </h3>
+
+            {selectedPozoObj?.coordX && selectedPozoObj?.coordY && (
+              <a
+                href={getGoogleMapsUrl(selectedPozoObj.coordX, selectedPozoObj.coordY, 18) || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1 rounded-md border bg-card hover:bg-muted/50 transition-colors shadow-2xs self-start sm:self-auto"
+                title="Abrir ubicación geográfica del pozo en Google Maps"
+              >
+                <MapPin className="size-3.5 text-rose-500 shrink-0" />
+                <span>Ver Pozo en Maps</span>
+                <ExternalLink className="size-3 opacity-50" />
+              </a>
+            )}
           </div>
 
           <SmartTable<MedicionGroupItem>
