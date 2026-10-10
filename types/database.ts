@@ -53,6 +53,7 @@ export interface Magnitud {
   valorMax: string;
   valorMin: string;
   unidad: string;
+  valorOptimo?: string;
 }
 
 export interface Medicion {
@@ -68,6 +69,7 @@ export interface Medicion {
   magnitudUnidad?: string;
   valorMin?: string;
   valorMax?: string;
+  valorOptimo?: string;
   medidorInfo?: string;
   pozoInfo?: string;
 }
@@ -114,6 +116,7 @@ export interface MedicionReportData {
     valorMedido: number;
     valorMin: number;
     valorMax: number;
+    valorOptimo?: number;
   }[];
 }
 

@@ -186,7 +186,9 @@ export default function MedicionesPrincipalPage() {
       label: mag.nombre,
       type: 'number',
       unit: mag.unidad,
-      placeholder: `Rango: ${mag.valorMin} a ${mag.valorMax}`,
+      placeholder: mag.valorOptimo
+        ? `Rango: ${mag.valorMin} a ${mag.valorMax} (Óptimo: ${mag.valorOptimo})`
+        : `Rango: ${mag.valorMin} a ${mag.valorMax}`,
       required: true,
     })),
   ];

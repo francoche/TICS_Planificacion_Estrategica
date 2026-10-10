@@ -22,11 +22,12 @@ export async function createMagnitud(data: Omit<Magnitud, 'id'>): Promise<{ succ
       valorMax: String(data.valorMax),
       valorMin: String(data.valorMin),
       unidad: data.unidad,
+      valorOptimo: data.valorOptimo !== undefined && data.valorOptimo !== null ? String(data.valorOptimo) : '',
     };
 
     const res = await pool.query(
-      'INSERT INTO "Magnitudes" ("nombre", "abreviatura", "valorMax", "valorMin", "unidad") VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [payload.nombre, payload.abreviatura, payload.valorMax, payload.valorMin, payload.unidad]
+      'INSERT INTO "Magnitudes" ("nombre", "abreviatura", "valorMax", "valorMin", "unidad", "valorOptimo") VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [payload.nombre, payload.abreviatura, payload.valorMax, payload.valorMin, payload.unidad, payload.valorOptimo]
     );
 
     revalidatePath('/magnitudes');
@@ -45,11 +46,12 @@ export async function updateMagnitud(id: number, data: Omit<Magnitud, 'id'>): Pr
       valorMax: String(data.valorMax),
       valorMin: String(data.valorMin),
       unidad: data.unidad,
+      valorOptimo: data.valorOptimo !== undefined && data.valorOptimo !== null ? String(data.valorOptimo) : '',
     };
 
     const res = await pool.query(
-      'UPDATE "Magnitudes" SET "nombre" = $1, "abreviatura" = $2, "valorMax" = $3, "valorMin" = $4, "unidad" = $5 WHERE "id" = $6 RETURNING *',
-      [payload.nombre, payload.abreviatura, payload.valorMax, payload.valorMin, payload.unidad, id]
+      'UPDATE "Magnitudes" SET "nombre" = $1, "abreviatura" = $2, "valorMax" = $3, "valorMin" = $4, "unidad" = $5, "valorOptimo" = $6 WHERE "id" = $7 RETURNING *',
+      [payload.nombre, payload.abreviatura, payload.valorMax, payload.valorMin, payload.unidad, payload.valorOptimo, id]
     );
 
     revalidatePath('/magnitudes');

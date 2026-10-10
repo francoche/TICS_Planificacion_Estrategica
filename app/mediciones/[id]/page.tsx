@@ -76,10 +76,19 @@ export default function ReporteMedicionPage() {
     const min = v.valorMin;
     const max = v.valorMax;
     const val = v.valorMedido;
-    const range = max - min;
-    const mid = (min + max) / 2;
-    const half = range > 0 ? range / 2 : 1;
-    const dist = Math.abs(val - mid) / half;
+    const optimo =
+      v.valorOptimo !== undefined && !isNaN(Number(v.valorOptimo))
+        ? Number(v.valorOptimo)
+        : (min + max) / 2;
+
+    let dist = 0;
+    if (val < optimo) {
+      const lowerSpan = optimo - min;
+      dist = lowerSpan > 0 ? (optimo - val) / lowerSpan : (optimo === val ? 0 : 1);
+    } else if (val > optimo) {
+      const upperSpan = max - optimo;
+      dist = upperSpan > 0 ? (val - optimo) / upperSpan : (optimo === val ? 0 : 1);
+    }
 
     if (val < min || val > max || dist > 0.8) {
       criticosCount++;
@@ -219,7 +228,7 @@ export default function ReporteMedicionPage() {
           <div className="flex items-center gap-3 text-[11px]">
             <span className="flex items-center gap-1">
               <span className="size-2 rounded-full bg-emerald-500" />
-              <span>Verde: Cercano al centro óptimo</span>
+              <span>Verde: Cercano al valor óptimo</span>
             </span>
             <span className="flex items-center gap-1">
               <span className="size-2 rounded-full bg-amber-500" />
@@ -243,6 +252,7 @@ export default function ReporteMedicionPage() {
               valorMedido={v.valorMedido}
               valorMin={v.valorMin}
               valorMax={v.valorMax}
+              valorOptimo={v.valorOptimo}
             />
           ))}
         </div>

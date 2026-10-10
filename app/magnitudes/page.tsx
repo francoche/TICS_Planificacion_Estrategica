@@ -44,6 +44,13 @@ export default function MagnitudesPage() {
       ),
     },
     { key: 'valorMin', label: 'Valor Mínimo', className: 'font-mono' },
+    {
+      key: 'valorOptimo',
+      label: 'Valor Óptimo',
+      className: 'font-mono text-emerald-600 font-semibold',
+      render: (val) =>
+        val ? <span>{val}</span> : <span className="text-muted-foreground italic text-xs">N/D</span>,
+    },
     { key: 'valorMax', label: 'Valor Máximo', className: 'font-mono' },
   ];
 
@@ -74,6 +81,13 @@ export default function MagnitudesPage() {
       label: 'Valor Mínimo',
       type: 'text',
       placeholder: 'Ej. 6.5',
+      required: true,
+    },
+    {
+      key: 'valorOptimo',
+      label: 'Valor Óptimo',
+      type: 'text',
+      placeholder: 'Ej. 7.0',
       required: true,
     },
     {
@@ -111,6 +125,7 @@ export default function MagnitudesPage() {
         abreviatura: formValues.abreviatura,
         valorMax: String(formValues.valorMax),
         valorMin: String(formValues.valorMin),
+        valorOptimo: String(formValues.valorOptimo || ''),
         unidad: formValues.unidad,
       });
       if (!res.success) throw new Error(res.error);
@@ -120,6 +135,7 @@ export default function MagnitudesPage() {
         abreviatura: formValues.abreviatura,
         valorMax: String(formValues.valorMax),
         valorMin: String(formValues.valorMin),
+        valorOptimo: String(formValues.valorOptimo || ''),
         unidad: formValues.unidad,
       });
       if (!res.success) throw new Error(res.error);

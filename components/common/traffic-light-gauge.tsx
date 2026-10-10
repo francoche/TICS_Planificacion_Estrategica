@@ -12,6 +12,7 @@ interface TrafficLightGaugeProps {
   valorMedido: number;
   valorMin: number;
   valorMax: number;
+  valorOptimo?: number;
 }
 
 export function TrafficLightGauge({
@@ -21,24 +22,39 @@ export function TrafficLightGauge({
   valorMedido,
   valorMin,
   valorMax,
+  valorOptimo,
 }: TrafficLightGaugeProps) {
   const min = Number(valorMin);
   const max = Number(valorMax);
   const val = Number(valorMedido);
 
   const rangeSpan = max - min;
-  const midPoint = (min + max) / 2;
+  const targetOptimo =
+    valorOptimo !== undefined && !isNaN(Number(valorOptimo))
+      ? Number(valorOptimo)
+      : (min + max) / 2;
 
   // Porcentaje relativo en la barra [0, 100]
-  let percentage = rangeSpan > 0 ? ((val - min) / rangeSpan) * 100 : 50;
+  const percentage = rangeSpan > 0 ? ((val - min) / rangeSpan) * 100 : 50;
   const clampedPercentage = Math.max(0, Math.min(100, percentage));
 
-  // Distancia normalizada al centro (0 = exactamente al medio, 1 = en los bordes, > 1 = fuera)
-  const halfSpan = rangeSpan > 0 ? rangeSpan / 2 : 1;
-  const distanceFromMid = Math.abs(val - midPoint);
-  const normalizedDistance = distanceFromMid / halfSpan;
+  // Posición del valor óptimo en la barra
+  const optimoPercentage = rangeSpan > 0 ? ((targetOptimo - min) / rangeSpan) * 100 : 50;
+  const clampedOptimoPercentage = Math.max(0, Math.min(100, optimoPercentage));
 
-  // Semáforo: Rojo en los extremos -> Amarillo intermedio -> Verde en el centro
+  // Distancia normalizada al valor óptimo (0 = en valor óptimo, 1 = en los límites min/max, > 1 = fuera de límite)
+  let normalizedDistance = 0;
+  if (val < targetOptimo) {
+    const lowerSpan = targetOptimo - min;
+    normalizedDistance = lowerSpan > 0 ? (targetOptimo - val) / lowerSpan : (targetOptimo === val ? 0 : 1);
+  } else if (val > targetOptimo) {
+    const upperSpan = max - targetOptimo;
+    normalizedDistance = upperSpan > 0 ? (val - targetOptimo) / upperSpan : (targetOptimo === val ? 0 : 1);
+  } else {
+    normalizedDistance = 0;
+  }
+
+  // Semáforo: Rojo en los extremos -> Amarillo intermedio -> Verde en el valor óptimo
   let status: 'optimo' | 'advertencia' | 'critico' = 'critico';
   let badgeColor = 'bg-rose-500/10 text-rose-600 border-rose-500/30 dark:text-rose-400';
   let textColor = 'text-rose-600 dark:text-rose-400';
@@ -48,22 +64,22 @@ export function TrafficLightGauge({
     status = 'critico';
     statusText = val < min ? 'Por debajo del mínimo' : 'Excede valor máximo';
   } else if (normalizedDistance <= 0.35) {
-    // Al medio del rango
     status = 'optimo';
     badgeColor = 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400';
     textColor = 'text-emerald-600 dark:text-emerald-400';
-    statusText = 'Óptimo (Centrado)';
+    statusText = 'Óptimo';
   } else if (normalizedDistance <= 0.8) {
-    // Rango intermedio
     status = 'advertencia';
     badgeColor = 'bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400';
     textColor = 'text-amber-600 dark:text-amber-400';
     statusText = 'Aceptable / Atención';
   } else {
-    // Cercano a los bordes
     status = 'critico';
     statusText = 'Límite de tolerancia';
   }
+
+  const leftAmberStop = Math.max(5, clampedOptimoPercentage * 0.5).toFixed(1);
+  const rightAmberStop = Math.min(95, clampedOptimoPercentage + (100 - clampedOptimoPercentage) * 0.5).toFixed(1);
 
   return (
     <Card className="overflow-hidden border transition-all hover:shadow-xs">
@@ -90,15 +106,15 @@ export function TrafficLightGauge({
           <span className="text-xs font-semibold text-muted-foreground">{unidad}</span>
         </div>
 
-        {/* Barra de semáforo (Rojo - Amarillo - Verde - Amarillo - Rojo) */}
+        {/* Barra de semáforo con gradiente adaptado al valor óptimo */}
         <div className="space-y-1.5">
           <div className="relative h-3 w-full rounded-full overflow-hidden bg-muted shadow-inner flex">
-            {/* Gradiente tricolor: Extremo Rojo -> Centro Verde -> Extremo Rojo */}
             <div
               className="h-full w-full"
               style={{
-                background:
-                  'linear-gradient(to right, #ef4444 0%, #f59e0b 25%, #10b981 50%, #f59e0b 75%, #ef4444 100%)',
+                background: `linear-gradient(to right, #ef4444 0%, #f59e0b ${leftAmberStop}%, #10b981 ${clampedOptimoPercentage.toFixed(
+                  1
+                )}%, #f59e0b ${rightAmberStop}%, #ef4444 100%)`,
               }}
             />
           </div>
@@ -108,15 +124,18 @@ export function TrafficLightGauge({
             <div
               className="absolute -top-1 -translate-x-1/2 flex flex-col items-center"
               style={{ left: `${clampedPercentage}%` }}
+              title={`Valor medido: ${val} ${unidad}`}
             >
               <div className="w-0 h-0 border-x-4 border-x-transparent border-b-6 border-b-foreground" />
             </div>
           </div>
 
-          {/* Rango Min, Mid y Max */}
+          {/* Rango Min, Óptimo y Max */}
           <div className="flex justify-between text-[10px] text-muted-foreground font-mono pt-1">
             <span>Min: {min}</span>
-            <span className="font-semibold text-emerald-600">Centro: {midPoint.toFixed(1)}</span>
+            <span className="font-semibold text-emerald-600">
+              Óptimo: {Number.isInteger(targetOptimo) ? targetOptimo : targetOptimo.toFixed(2)}
+            </span>
             <span>Max: {max}</span>
           </div>
         </div>

@@ -61,7 +61,7 @@ export async function getMedicionReport(idMedicion: number): Promise<MedicionRep
     // Traer todas las mediciones de la misma fecha, pozo y medidor
     const resGroup = await pool.query(
       `SELECT m.*, mag.nombre as "magnitudNombre", mag.abreviatura as "magnitudAbreviatura",
-              mag.unidad as "magnitudUnidad", mag."valorMin", mag."valorMax"
+              mag.unidad as "magnitudUnidad", mag."valorMin", mag."valorMax", mag."valorOptimo"
        FROM "Medicion" m
        LEFT JOIN "Magnitudes" mag ON m."idMagnitud" = mag."id"
        WHERE m."idPozo" = $1 AND m."idMedidor" = $2 AND m."fecha" = $3
@@ -111,6 +111,10 @@ export async function getMedicionReport(idMedicion: number): Promise<MedicionRep
         valorMedido: Number(item.medicion),
         valorMin: parseFloat(item.valorMin) || 0,
         valorMax: parseFloat(item.valorMax) || 100,
+        valorOptimo:
+          item.valorOptimo !== null && item.valorOptimo !== undefined && item.valorOptimo !== ''
+            ? parseFloat(item.valorOptimo)
+            : undefined,
       })),
     };
   } catch (error: any) {
