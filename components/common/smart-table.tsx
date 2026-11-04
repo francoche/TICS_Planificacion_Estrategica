@@ -179,6 +179,10 @@ export function SmartTable<T extends Record<string, any>>({
                     {columns.map((col) => {
                       const rawValue = row[col.key];
                       const rendered = col.render ? col.render(rawValue, row) : rawValue ?? '-';
+                      const cellContent =
+                        rendered instanceof Date
+                          ? rendered.toISOString().split('T')[0]
+                          : (rendered ?? '-');
 
                       return (
                         <TableCell
@@ -190,7 +194,7 @@ export function SmartTable<T extends Record<string, any>>({
                             col.className
                           )}
                         >
-                          {rendered}
+                          {cellContent}
                         </TableCell>
                       );
                     })}

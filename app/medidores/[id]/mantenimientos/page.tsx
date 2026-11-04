@@ -44,13 +44,23 @@ export default function MedidorMantenimientosPage() {
     { key: 'id', label: 'ID', className: 'w-16 font-mono' },
     {
       key: 'fecha',
-      label: 'Fecha y Hora',
-      render: (val) => (
-        <span className="font-mono text-xs flex items-center gap-1.5">
-          <Calendar className="size-3.5 text-muted-foreground" />
-          <span>{val}</span>
-        </span>
-      ),
+      label: 'Fecha',
+      render: (val) => {
+        let display = '-';
+        if (val) {
+          if (val instanceof Date) {
+            display = `${val.getFullYear()}-${String(val.getMonth() + 1).padStart(2, '0')}-${String(val.getDate()).padStart(2, '0')}`;
+          } else {
+            display = String(val).split('T')[0];
+          }
+        }
+        return (
+          <span className="font-mono text-xs flex items-center gap-1.5">
+            <Calendar className="size-3.5 text-muted-foreground" />
+            <span>{display}</span>
+          </span>
+        );
+      },
     },
     {
       key: 'detalle',
@@ -84,7 +94,19 @@ export default function MedidorMantenimientosPage() {
   };
 
   const handleEdit = (item: Mantenimiento) => {
-    setEditingItem(item);
+    let formattedFecha = '';
+    if (item.fecha) {
+      if ((item.fecha as any) instanceof Date) {
+        const d = item.fecha as any;
+        formattedFecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      } else {
+        formattedFecha = String(item.fecha).split('T')[0];
+      }
+    }
+    setEditingItem({
+      ...item,
+      fecha: formattedFecha,
+    });
     setIsDialogOpen(true);
   };
 
@@ -164,7 +186,7 @@ export default function MedidorMantenimientosPage() {
                   <span className="text-[11px] text-muted-foreground block">Historial Registrado</span>
                   <Badge variant="secondary" className="mt-0.5 gap-1 text-xs">
                     <Wrench className="size-3" />
-                    <span>{data?.length} Intervenciones</span>
+                    <span>{data?.length ?? 0} Intervenciones</span>
                   </Badge>
                 </div>
               </div>
